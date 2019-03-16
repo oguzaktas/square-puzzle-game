@@ -3,6 +3,7 @@ package main;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
@@ -30,6 +31,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
@@ -51,10 +53,13 @@ public class Main extends javax.swing.JFrame {
     private final int DESIRED_WIDTH = 480; // Resim dosyasinin default genislik (width) boyutu 480 olarak belirlendi.
     private String filePath;
     private int score = 0; // Oyuna baslarken default olarak 0 puan verilir.
-    private int[][] rgbValues = new int[16][3];
+    private final int[][] rgbValues = new int[16][3];
+    private boolean isSolved = false;
+    private int numberOfMoves = 0;
 
     /**
      * Creates new form Main
+     *
      * @throws java.io.FileNotFoundException
      */
     public Main() throws FileNotFoundException {
@@ -74,8 +79,6 @@ public class Main extends javax.swing.JFrame {
         Graphics2D g = resizedImage.createGraphics();
         g.drawImage(originalImage, 0, 0, width, height, null);
         g.dispose();
-        File outputfile = new File("saved.png");
-        ImageIO.write(resizedImage, "png", outputfile);
         return resizedImage;
     }
 
@@ -86,7 +89,6 @@ public class Main extends javax.swing.JFrame {
         g.dispose();
         return newImage;
     }
-
 
     private void buildPuzzle() {
         jPanel1.removeAll();
@@ -107,7 +109,7 @@ public class Main extends javax.swing.JFrame {
         buttons = new ArrayList<Button>();
         jPanel1.setPreferredSize(new Dimension(width, height));
         jPanel1.setLayout(new GridLayout(4, 4, 0, 0));
-        for (int i = 0, k = 0; i < 4; i++, k+=4) {
+        for (int i = 0, k = 0; i < 4; i++, k += 4) {
             for (int j = 0; j < 4; j++) {
                 image = createImage(new FilteredImageSource(resized.getSource(), new CropImageFilter(j * (width / 4), i * (height / 4), (width / 4), (height / 4))));
                 BufferedImage bufferedImage = convertToBufferedImage(image);
@@ -119,32 +121,22 @@ public class Main extends javax.swing.JFrame {
                 rgbValues[k + j][0] = color.getRed();
                 rgbValues[k + j][1] = color.getGreen();
                 rgbValues[k + j][2] = color.getBlue();
-                button.putClientProperty("rgb", rgbValues); // Her butonun konumdan bagimsiz olarak key-value seklinde RGB ozelligi tanimlandi.
+                button.putClientProperty("r", rgbValues[k + j][0]); // Her butonun konumdan bagimsiz olarak key-value seklinde RGB ozellikleri tanimlandi.
+                button.putClientProperty("g", rgbValues[k + j][1]);
+                button.putClientProperty("b", rgbValues[k + j][2]);
                 buttons.add(button);
-                /*
-                if (i == 3 && j == 3) {
-                    lastButton = new Button();
-                    lastButton.setBorderPainted(false);
-                    lastButton.setContentAreaFilled(false);
-                    lastButton.setLastButton();
-                    lastButton.putClientProperty("position", new Point(i, j));
-                } else {
-                    buttons.add(button);
-                }
-                 */
             }
-            System.out.println("");
         }
 
         Collections.shuffle(buttons);
         for (int i = 0; i < NUMBER_OF_BUTTONS; i++) {
             Button button = buttons.get(i);
             jPanel1.add(button);
-            button.setBorder(BorderFactory.createLineBorder(Color.WHITE, (int) 1.8));
+            button.setBorder(BorderFactory.createLineBorder(Color.WHITE, 1));
             button.addActionListener(new ClickAction());
         }
         this.pack();
-        this.setLocationRelativeTo(null);
+        compareButtons();
     }
 
     private void getHighestScore() throws FileNotFoundException {
@@ -171,43 +163,79 @@ public class Main extends javax.swing.JFrame {
         }
         lbl_highestScore.setText("En Yuksek Skor: " + highest);
     }
-    
-    private void setScore() {
-        
-    }
-    
+
     private void compareButtons() {
-        
+        isSolved = true;
+        for (int i = 0; i < rgbValues.length; i++) {
+            if ((rgbValues[i][0] == Integer.parseInt(buttons.get(i).getClientProperty("r").toString()))
+                    && (rgbValues[i][1] == Integer.parseInt(buttons.get(i).getClientProperty("g").toString()))
+                    && (rgbValues[i][2] == Integer.parseInt(buttons.get(i).getClientProperty("b").toString()))) {
+                score += 6;
+            } else {
+                isSolved = false;
+            }
+        }
+        lbl_score.setText("Skor: " + score);
+        if (isSolved) {
+            score = 100;
+            JOptionPane.showMessageDialog(jPanel1, "<html><b>Tebrikler! Puzzle tamamlanmistir.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
+            printScore();
+            jPanel1.setEnabled(false);
+        }
+        if (score == 0) {
+            JOptionPane.showMessageDialog(jPanel1, "<html><b>Hicbir puzzle parcasi dogru yerde olmadigi icin karistirmaya devam ediniz.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
+        } else { // Bir veya daha fazla puzzle parcası dogru yerdeyse Karistir butonu kapatilir.
+            btn_shuffle.setEnabled(false);
+        }
+    }
+
+    private void printScore() {
+
+    }
+
+    private void setPanelEnabled(JPanel panel, Boolean isEnabled) {
+        panel.setEnabled(isEnabled);
+        Component[] components = panel.getComponents();
+        for (Component component : components) {
+            if (component instanceof JPanel) {
+                setPanelEnabled((JPanel) component, isEnabled);
+            }
+            component.setEnabled(isEnabled);
+        }
     }
 
     private class ClickAction extends AbstractAction {
-
         @Override
         public void actionPerformed(ActionEvent e) {
             changeButtons(e);
-            checkSolution();
         }
 
         private void changeButtons(ActionEvent e) {
-            /*
-            int lidx = 0;
-            for (Button button : buttons) {
-                if (button.isLastButton()) {
-                    lidx = buttons.indexOf(button);
-                }
-            }
-            JButton button = (JButton) e.getSource();
-            int bidx = buttons.indexOf(button);
-            if ((bidx - 1 == lidx) || (bidx + 1 == lidx) || (bidx - 4 == lidx) || (bidx + 4 == lidx)) {
-                Collections.swap(buttons, lidx, bidx);
-                updateButtons();
-            }
-             */
             JButton button = (JButton) e.getSource();
             if (clickedButton != null) {
+                numberOfMoves++;
+                System.out.println("number of moves: " + numberOfMoves);
                 Collections.swap(buttons, buttons.indexOf(clickedButton), buttons.indexOf(button)); // Son tiklanan butonlarin yer degistirmesi islemi
                 clickedButton = null;
                 updateButtons();
+                isSolved = true;
+                score = 0;
+                for (int i = 0; i < rgbValues.length; i++) {
+                    if ((rgbValues[i][0] == Integer.parseInt(buttons.get(i).getClientProperty("r").toString()))
+                            && (rgbValues[i][1] == Integer.parseInt(buttons.get(i).getClientProperty("g").toString()))
+                            && (rgbValues[i][2] == Integer.parseInt(buttons.get(i).getClientProperty("b").toString()))) {
+                        score += 6;
+                    } else {
+                        isSolved = false;
+                    }
+                }
+                score -= numberOfMoves;
+                lbl_score.setText("Skor: " + score);
+                if (isSolved) {
+                    JOptionPane.showMessageDialog(jPanel1, "<html><b>Tebrikler! Puzzle tamamlanmistir.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
+                    printScore();
+                    setPanelEnabled(jPanel1, false);
+                }
             } else { // Herhangi bir butona ilk tiklama olup olmadiginin kontrolu
                 clickedButton = (Button) e.getSource();
             }
@@ -220,28 +248,7 @@ public class Main extends javax.swing.JFrame {
             });
             jPanel1.validate();
         }
-        
-        private void updateScore() {
-            
-        }
 
-    }
-
-    private void checkSolution() {
-        /*
-        List<Point> current = new ArrayList<Point>();
-        for (JComponent button : buttons) {
-            current.add((Point) button.getClientProperty("position"));
-        }
-
-        if (compareList(solution, current)) {
-            JOptionPane.showMessageDialog(jPanel1, "Main tamamlandi.", "Tebrikler!", JOptionPane.INFORMATION_MESSAGE);
-        }
-        * */
-    }
-
-    public static boolean compareList(List list1, List list2) {
-        return list1.toString().contentEquals(list2.toString());
     }
 
     /**
@@ -368,30 +375,18 @@ public class Main extends javax.swing.JFrame {
         }
         //</editor-fold>
         //</editor-fold>
-        
-        //</editor-fold>
-        //</editor-fold>
-
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    new Main().setVisible(true);
-                } catch (FileNotFoundException ex) {
-                    Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                new Main().setVisible(true);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
     }
 
     private void btn_shuffleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_shuffleActionPerformed
         buildPuzzle();
-        if (score == 0) { // Butonlarin dogru yerde olup olmadiginin kontrolu
-            lbl_score.setText("Skor: " + score);
-            JOptionPane.showMessageDialog(jPanel1, "<html><b>Hicbir puzzle parcasi dogru yerde olmadigi icin karistirmaya devam ediniz.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
-        } else {
-            btn_shuffle.setEnabled(false);
-        }
     }//GEN-LAST:event_btn_shuffleActionPerformed
 
     private void btn_selectImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_selectImageActionPerformed
