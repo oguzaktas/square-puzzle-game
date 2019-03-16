@@ -10,6 +10,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
 import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
 import java.awt.image.RenderedImage;
@@ -46,11 +47,11 @@ public class Main extends javax.swing.JFrame {
     private int height;
     private Button clickedButton;
     private List<Button> buttons;
-    private List<Point> solution;
     private final int NUMBER_OF_BUTTONS = 16;
     private final int DESIRED_WIDTH = 480; // Resim dosyasinin default genislik (width) boyutu 480 olarak belirlendi.
     private String filePath;
     private int score = 0; // Oyuna baslarken default olarak 0 puan verilir.
+    private int[][] rgbValues = new int[16][3];
 
     /**
      * Creates new form Main
@@ -78,6 +79,15 @@ public class Main extends javax.swing.JFrame {
         return resizedImage;
     }
 
+    public static BufferedImage convertToBufferedImage(Image image) { // Image tipindeki resim dosyasini BufferedImage'e cevirir.
+        BufferedImage newImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = newImage.createGraphics();
+        g.drawImage(image, 0, 0, null);
+        g.dispose();
+        return newImage;
+    }
+
+
     private void buildPuzzle() {
         jPanel1.removeAll();
         jPanel1.revalidate();
@@ -97,11 +107,19 @@ public class Main extends javax.swing.JFrame {
         buttons = new ArrayList<Button>();
         jPanel1.setPreferredSize(new Dimension(width, height));
         jPanel1.setLayout(new GridLayout(4, 4, 0, 0));
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0, k = 0; i < 4; i++, k+=4) {
             for (int j = 0; j < 4; j++) {
                 image = createImage(new FilteredImageSource(resized.getSource(), new CropImageFilter(j * (width / 4), i * (height / 4), (width / 4), (height / 4))));
-                Button button = new Button(image);
-                button.putClientProperty("position", new Point(i, j));
+                BufferedImage bufferedImage = convertToBufferedImage(image);
+                Button button = new Button(bufferedImage);
+                int buttonWidth = bufferedImage.getWidth();
+                int buttonHeight = bufferedImage.getHeight();
+                int[] dataBuffInt = bufferedImage.getRGB(0, 0, buttonWidth, buttonHeight, null, 0, buttonWidth);
+                Color color = new Color(dataBuffInt[100]);
+                rgbValues[k + j][0] = color.getRed();
+                rgbValues[k + j][1] = color.getGreen();
+                rgbValues[k + j][2] = color.getBlue();
+                button.putClientProperty("rgb", rgbValues); // Her butonun konumdan bagimsiz olarak key-value seklinde RGB ozelligi tanimlandi.
                 buttons.add(button);
                 /*
                 if (i == 3 && j == 3) {
@@ -115,6 +133,7 @@ public class Main extends javax.swing.JFrame {
                 }
                  */
             }
+            System.out.println("");
         }
 
         Collections.shuffle(buttons);
