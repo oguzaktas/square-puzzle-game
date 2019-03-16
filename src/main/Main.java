@@ -138,7 +138,7 @@ public class Main extends javax.swing.JFrame {
         this.pack();
         compareButtons();
     }
-
+    
     private void getHighestScore() throws FileNotFoundException {
         int highest = 0;
         try (Scanner file = new Scanner(new File("enyuksekskor.txt"))) {
