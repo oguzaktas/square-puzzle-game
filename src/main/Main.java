@@ -48,7 +48,7 @@ public class Main extends javax.swing.JFrame {
     private List<Button> buttons;
     private List<Point> solution;
     private final int NUMBER_OF_BUTTONS = 16;
-    private final int DESIRED_WIDTH = 480; // Resim dosyasinin boyutu = 480x480
+    private final int DESIRED_WIDTH = 480; // Resim dosyasinin default genislik (width) boyutu 480 olarak belirlendi.
     private String filePath;
     private int score = 0; // Oyuna baslarken default olarak 0 puan verilir.
 
@@ -127,10 +127,6 @@ public class Main extends javax.swing.JFrame {
         this.pack();
         this.setLocationRelativeTo(null);
     }
-    
-    private void setScore() {
-        
-    }
 
     private void getHighestScore() throws FileNotFoundException {
         int highest = 0;
@@ -155,6 +151,14 @@ public class Main extends javax.swing.JFrame {
             }
         }
         lbl_highestScore.setText("En Yuksek Skor: " + highest);
+    }
+    
+    private void setScore() {
+        
+    }
+    
+    private void compareButtons() {
+        
     }
 
     private class ClickAction extends AbstractAction {
