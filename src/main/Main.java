@@ -1,22 +1,19 @@
+
 package main;
 
-import java.awt.BasicStroke;
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.image.BufferedImage;
-import java.awt.image.ColorModel;
 import java.awt.image.CropImageFilter;
 import java.awt.image.FilteredImageSource;
-import java.awt.image.RenderedImage;
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,16 +25,13 @@ import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * Yazilim Laboratuvari II Proje 1
- *
  * @author Oguz Aktas
  */
 public class Main extends javax.swing.JFrame {
@@ -59,10 +53,9 @@ public class Main extends javax.swing.JFrame {
 
     /**
      * Creates new form Main
-     *
-     * @throws java.io.FileNotFoundException
+     * @throws java.io.IOException
      */
-    public Main() throws FileNotFoundException {
+    public Main() throws IOException {
         initComponents();
         this.pack();
         this.setLocationRelativeTo(null);
@@ -90,7 +83,7 @@ public class Main extends javax.swing.JFrame {
         return newImage;
     }
 
-    private void buildPuzzle() {
+    private void buildPuzzle() throws IOException {
         jPanel1.removeAll();
         jPanel1.revalidate();
         jPanel1.repaint();
@@ -139,11 +132,15 @@ public class Main extends javax.swing.JFrame {
         compareButtons();
     }
     
-    private void getHighestScore() throws FileNotFoundException {
+    private void getHighestScore() throws IOException {
         int highest = 0;
-        try (Scanner file = new Scanner(new File("enyuksekskor.txt"))) {
-            while (file.hasNextLine()) {
-                String currentLine = file.nextLine();
+        File file = new File("enyuksekskor.txt");
+        if (!file.exists()) {
+            file.createNewFile();
+        }
+        try (Scanner scan = new Scanner(new File("enyuksekskor.txt"))) {
+            while (scan.hasNextLine()) {
+                String currentLine = scan.nextLine();
                 String words[] = currentLine.split(" ");
                 int number = 0;
                 for (String str : words) {
@@ -164,7 +161,7 @@ public class Main extends javax.swing.JFrame {
         lbl_highestScore.setText("En Yuksek Skor: " + highest);
     }
 
-    private void compareButtons() {
+    private void compareButtons() throws IOException {
         isSolved = true;
         for (int i = 0; i < rgbValues.length; i++) {
             if ((rgbValues[i][0] == Integer.parseInt(buttons.get(i).getClientProperty("r").toString()))
@@ -180,6 +177,7 @@ public class Main extends javax.swing.JFrame {
             score = 100;
             JOptionPane.showMessageDialog(jPanel1, "<html><b>Tebrikler! Puzzle tamamlanmistir.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
             printScore();
+            getHighestScore();
             jPanel1.setEnabled(false);
         }
         if (score == 0) {
@@ -189,8 +187,13 @@ public class Main extends javax.swing.JFrame {
         }
     }
 
-    private void printScore() {
-
+    private void printScore() throws IOException {
+        FileWriter fileWriter = new FileWriter("enyuksekskor.txt", true);
+        try (BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+            bufferedWriter.write(lbl_score.getText());
+            bufferedWriter.newLine();
+            bufferedWriter.close();
+        }
     }
 
     private void setPanelEnabled(JPanel panel, Boolean isEnabled) {
@@ -207,14 +210,17 @@ public class Main extends javax.swing.JFrame {
     private class ClickAction extends AbstractAction {
         @Override
         public void actionPerformed(ActionEvent e) {
-            changeButtons(e);
+            try {
+                changeButtons(e);
+            } catch (IOException ex) {
+                Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
 
-        private void changeButtons(ActionEvent e) {
+        private void changeButtons(ActionEvent e) throws IOException {
             JButton button = (JButton) e.getSource();
             if (clickedButton != null) {
                 numberOfMoves++;
-                System.out.println("number of moves: " + numberOfMoves);
                 Collections.swap(buttons, buttons.indexOf(clickedButton), buttons.indexOf(button)); // Son tiklanan butonlarin yer degistirmesi islemi
                 clickedButton = null;
                 updateButtons();
@@ -234,6 +240,7 @@ public class Main extends javax.swing.JFrame {
                 if (isSolved) {
                     JOptionPane.showMessageDialog(jPanel1, "<html><b>Tebrikler! Puzzle tamamlanmistir.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
                     printScore();
+                    getHighestScore();
                     setPanelEnabled(jPanel1, false);
                 }
             } else { // Herhangi bir butona ilk tiklama olup olmadiginin kontrolu
@@ -379,14 +386,18 @@ public class Main extends javax.swing.JFrame {
         java.awt.EventQueue.invokeLater(() -> {
             try {
                 new Main().setVisible(true);
-            } catch (FileNotFoundException ex) {
+            } catch (IOException ex) {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
     }
 
     private void btn_shuffleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_shuffleActionPerformed
-        buildPuzzle();
+        try {
+            buildPuzzle();
+        } catch (IOException ex) {
+            Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_btn_shuffleActionPerformed
 
     private void btn_selectImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_selectImageActionPerformed
