@@ -26,21 +26,21 @@ public class Button extends JButton {
     }
 
     private void init() {
-        BorderFactory.createLineBorder(Color.GRAY, 2);
+        BorderFactory.createLineBorder(Color.GRAY, 1);
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseEntered(MouseEvent e) {
-                setBorder(BorderFactory.createLineBorder(Color.YELLOW, (int) 1.8));
+                setBorder(BorderFactory.createLineBorder(Color.YELLOW, 1));
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
-                setBorder(BorderFactory.createLineBorder(Color.WHITE, (int) 1.8));
+                setBorder(BorderFactory.createLineBorder(Color.WHITE, 1));
             }
 
             @Override
             public void mouseClicked(MouseEvent e) {
-                setBorder(BorderFactory.createLineBorder(Color.RED, (int) 1.8));
+                setBorder(BorderFactory.createLineBorder(Color.RED, 1));
             }
         });
     }

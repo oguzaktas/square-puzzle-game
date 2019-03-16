@@ -1,5 +1,4 @@
-Skor: 0
-Skor: 13
-Skor: 51
-Skor: 56
-Skor: 22
+Skor: 85
+Skor: 58
+Skor: 47
+Skor: 76
