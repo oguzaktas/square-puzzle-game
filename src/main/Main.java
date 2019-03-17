@@ -44,12 +44,12 @@ public class Main extends javax.swing.JFrame {
     private Button clickedButton;
     private List<Button> buttons;
     private final int NUMBER_OF_BUTTONS = 16;
-    private final int DESIRED_WIDTH = 520; // Resim dosyasinin default genislik (width) boyutu 480 olarak belirlendi.
+    private final int DESIRED_WIDTH = 520; // Resim dosyasinin default genislik (width) boyutu 520 olarak belirlendi.
     private String filePath;
     private int score = 0; // Oyuna baslarken default olarak 0 puan verilir.
-    private final int[][] rgbValues = new int[16][3];
-    private boolean isSolved = false;
-    private int numberOfMoves = 0;
+    private final int[][] rgbValues = new int[16][3]; // Resim bolunmeden once her parcanin RGB degerini kaydetmek icin kullanilan matris
+    private boolean isSolved = false; // Puzzle'in bitip bitmedigini kontrol eden degisken
+    private int numberOfMoves = 0; // Hamle sayisi
 
     /**
      * Creates new form Main
@@ -75,7 +75,7 @@ public class Main extends javax.swing.JFrame {
         return resizedImage;
     }
 
-    public static BufferedImage convertToBufferedImage(Image image) { // Image tipindeki resim dosyasini BufferedImage'e cevirir.
+    private BufferedImage convertToBufferedImage(Image image) { // Image tipindeki resim dosyasini BufferedImage'e cevirir.
         BufferedImage newImage = new BufferedImage(image.getWidth(null), image.getHeight(null), BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = newImage.createGraphics();
         g.drawImage(image, 0, 0, null);
@@ -182,7 +182,7 @@ public class Main extends javax.swing.JFrame {
         }
         if (score == 0) {
             JOptionPane.showMessageDialog(jPanel1, "<html><b>Hicbir puzzle parcasi dogru yerde olmadigi icin karistirmaya devam ediniz.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
-        } else { // Bir veya daha fazla puzzle parcası dogru yerdeyse Karistir butonu kapatilir.
+        } else { // Bir veya daha fazla puzzle parcasi dogru yerdeyse Karistir butonu kapatilir.
             btn_shuffle.setEnabled(false);
         }
     }
@@ -415,6 +415,7 @@ public class Main extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(jPanel1, "<html><b>Resim secme islemi tamamlanmistir, karistir butonuna basabilirsiniz.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
             btn_shuffle.setEnabled(true);
             score = 0;
+            numberOfMoves = 0;
             lbl_score.setText("Skor: " + score);
         }
     }//GEN-LAST:event_btn_selectImageActionPerformed
