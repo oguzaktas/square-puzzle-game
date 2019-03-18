@@ -47,7 +47,8 @@ public class Main extends javax.swing.JFrame {
     private final int DESIRED_WIDTH = 520; // Resim dosyasinin default genislik (width) boyutu 520 olarak belirlendi.
     private String filePath;
     private int score = 0; // Oyuna baslarken default olarak 0 puan verilir.
-    private final int[][] rgbValues = new int[16][3]; // Resim bolunmeden once her parcanin RGB degerini kaydetmek icin kullanilan matris
+    //private final int[][] rgbValues = new int[16][3]; // Resim bolunmeden once her parcanin RGB degerini kaydetmek icin kullanilan matris
+    private final BufferedImage[] images = new BufferedImage[16]; // Baslangicta dogru yerde bulunan 16 puzzle parcasini tutan degisken
     private boolean isSolved = false; // Puzzle'in bitip bitmedigini kontrol eden degisken
     private int numberOfMoves = 0; // Hamle sayisi
 
@@ -107,6 +108,9 @@ public class Main extends javax.swing.JFrame {
                 image = createImage(new FilteredImageSource(resized.getSource(), new CropImageFilter(j * (width / 4), i * (height / 4), (width / 4), (height / 4))));
                 BufferedImage bufferedImage = convertToBufferedImage(image);
                 Button button = new Button(bufferedImage);
+                images[k + j] = bufferedImage;
+                button.setImage(bufferedImage); // Her butonun bulundurdugu puzzle parcasi konumdan bagimsiz olarak kaydedildi.
+                /**
                 int buttonWidth = bufferedImage.getWidth();
                 int buttonHeight = bufferedImage.getHeight();
                 int[] dataBuffInt = bufferedImage.getRGB(0, 0, buttonWidth, buttonHeight, null, 0, buttonWidth);
@@ -117,6 +121,7 @@ public class Main extends javax.swing.JFrame {
                 button.putClientProperty("r", rgbValues[k + j][0]); // Her butonun konumdan bagimsiz olarak key-value seklinde RGB ozellikleri tanimlandi.
                 button.putClientProperty("g", rgbValues[k + j][1]);
                 button.putClientProperty("b", rgbValues[k + j][2]);
+                */
                 buttons.add(button);
             }
         }
@@ -161,12 +166,25 @@ public class Main extends javax.swing.JFrame {
         lbl_highestScore.setText("En Yuksek Skor: " + highest);
     }
 
+    private boolean compare(BufferedImage image1, BufferedImage image2) {
+        if (image1.getWidth() == image2.getWidth() && image1.getHeight() == image2.getHeight()) {
+            for (int j = 0; j < image1.getWidth(); j++) {
+                for (int k = 0; k < image2.getHeight(); k++) {
+                    if (image1.getRGB(j, k) != image2.getRGB(j, k)) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            return false;
+        }
+        return true;
+    }
+
     private void compareButtons() throws IOException {
         isSolved = true;
-        for (int i = 0; i < rgbValues.length; i++) {
-            if ((rgbValues[i][0] == Integer.parseInt(buttons.get(i).getClientProperty("r").toString()))
-                    && (rgbValues[i][1] == Integer.parseInt(buttons.get(i).getClientProperty("g").toString()))
-                    && (rgbValues[i][2] == Integer.parseInt(buttons.get(i).getClientProperty("b").toString()))) {
+        for (int i = 0; i < images.length; i++) {
+            if (compare(images[i], buttons.get(i).getImage())) {
                 score += 6;
             } else {
                 isSolved = false;
@@ -174,7 +192,10 @@ public class Main extends javax.swing.JFrame {
         }
         lbl_score.setText("Skor: " + score);
         if (isSolved) {
-            score = 100;
+            if (numberOfMoves == 0) {
+                score = 100;
+                lbl_score.setText("Skor: " + score);
+            }
             JOptionPane.showMessageDialog(jPanel1, "<html><b>Tebrikler! Puzzle tamamlanmistir.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
             printScore();
             getHighestScore();
@@ -216,20 +237,20 @@ public class Main extends javax.swing.JFrame {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-
+        
         private void changeButtons(ActionEvent e) throws IOException {
             JButton button = (JButton) e.getSource();
             if (clickedButton != null) {
-                numberOfMoves++;
+                if (clickedButton != button) {
+                    numberOfMoves++;
+                }
                 Collections.swap(buttons, buttons.indexOf(clickedButton), buttons.indexOf(button)); // Son tiklanan butonlarin yer degistirmesi islemi
                 clickedButton = null;
                 updateButtons();
                 isSolved = true;
                 score = 0;
-                for (int i = 0; i < rgbValues.length; i++) {
-                    if ((rgbValues[i][0] == Integer.parseInt(buttons.get(i).getClientProperty("r").toString()))
-                            && (rgbValues[i][1] == Integer.parseInt(buttons.get(i).getClientProperty("g").toString()))
-                            && (rgbValues[i][2] == Integer.parseInt(buttons.get(i).getClientProperty("b").toString()))) {
+                for (int i = 0; i < images.length; i++) {
+                    if (compare(images[i], buttons.get(i).getImage())) {
                         score += 6;
                     } else {
                         isSolved = false;
