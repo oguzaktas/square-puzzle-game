@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -14,6 +15,8 @@ import javax.swing.JButton;
  * @author Oguz Aktas
  */
 public class Button extends JButton {
+    
+    private BufferedImage image;
     
     public Button() {
         super();
@@ -44,5 +47,13 @@ public class Button extends JButton {
             }
         });
     }
-    
+
+    public BufferedImage getImage() {
+        return image;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
+    }
+
 }

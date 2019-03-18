@@ -1,4 +1,3 @@
-
 package main;
 
 import java.awt.Color;
@@ -32,6 +31,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * Yazilim Laboratuvari II Proje 1
+ *
  * @author Oguz Aktas
  */
 public class Main extends javax.swing.JFrame {
@@ -47,7 +47,6 @@ public class Main extends javax.swing.JFrame {
     private final int DESIRED_WIDTH = 520; // Resim dosyasinin default genislik (width) boyutu 520 olarak belirlendi.
     private String filePath;
     private int score = 0; // Oyuna baslarken default olarak 0 puan verilir.
-    //private final int[][] rgbValues = new int[16][3]; // Resim bolunmeden once her parcanin RGB degerini kaydetmek icin kullanilan matris
     private final BufferedImage[] images = new BufferedImage[16]; // Baslangicta dogru yerde bulunan 16 puzzle parcasini tutan degisken
     private boolean isSolved = false; // Puzzle'in bitip bitmedigini kontrol eden degisken
     private int numberOfMoves = 0; // Hamle sayisi
@@ -110,18 +109,6 @@ public class Main extends javax.swing.JFrame {
                 Button button = new Button(bufferedImage);
                 images[k + j] = bufferedImage;
                 button.setImage(bufferedImage); // Her butonun bulundurdugu puzzle parcasi konumdan bagimsiz olarak kaydedildi.
-                /**
-                int buttonWidth = bufferedImage.getWidth();
-                int buttonHeight = bufferedImage.getHeight();
-                int[] dataBuffInt = bufferedImage.getRGB(0, 0, buttonWidth, buttonHeight, null, 0, buttonWidth);
-                Color color = new Color(dataBuffInt[100]);
-                rgbValues[k + j][0] = color.getRed();
-                rgbValues[k + j][1] = color.getGreen();
-                rgbValues[k + j][2] = color.getBlue();
-                button.putClientProperty("r", rgbValues[k + j][0]); // Her butonun konumdan bagimsiz olarak key-value seklinde RGB ozellikleri tanimlandi.
-                button.putClientProperty("g", rgbValues[k + j][1]);
-                button.putClientProperty("b", rgbValues[k + j][2]);
-                */
                 buttons.add(button);
             }
         }
@@ -134,9 +121,9 @@ public class Main extends javax.swing.JFrame {
             button.addActionListener(new ClickAction());
         }
         this.pack();
-        compareButtons();
+        setScore();
     }
-    
+
     private void getHighestScore() throws IOException {
         int highest = 0;
         File file = new File("enyuksekskor.txt");
@@ -166,7 +153,7 @@ public class Main extends javax.swing.JFrame {
         lbl_highestScore.setText("En Yuksek Skor: " + highest);
     }
 
-    private boolean compare(BufferedImage image1, BufferedImage image2) {
+    private boolean compareImages(BufferedImage image1, BufferedImage image2) {
         if (image1.getWidth() == image2.getWidth() && image1.getHeight() == image2.getHeight()) {
             for (int j = 0; j < image1.getWidth(); j++) {
                 for (int k = 0; k < image2.getHeight(); k++) {
@@ -181,10 +168,10 @@ public class Main extends javax.swing.JFrame {
         return true;
     }
 
-    private void compareButtons() throws IOException {
+    private void setScore() throws IOException {
         isSolved = true;
         for (int i = 0; i < images.length; i++) {
-            if (compare(images[i], buttons.get(i).getImage())) {
+            if (compareImages(images[i], buttons.get(i).getImage())) {
                 score += 6;
             } else {
                 isSolved = false;
@@ -229,6 +216,7 @@ public class Main extends javax.swing.JFrame {
     }
 
     private class ClickAction extends AbstractAction {
+
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
@@ -237,7 +225,7 @@ public class Main extends javax.swing.JFrame {
                 Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         private void changeButtons(ActionEvent e) throws IOException {
             JButton button = (JButton) e.getSource();
             if (clickedButton != null) {
@@ -250,7 +238,7 @@ public class Main extends javax.swing.JFrame {
                 isSolved = true;
                 score = 0;
                 for (int i = 0; i < images.length; i++) {
-                    if (compare(images[i], buttons.get(i).getImage())) {
+                    if (compareImages(images[i], buttons.get(i).getImage())) {
                         score += 6;
                     } else {
                         isSolved = false;
@@ -423,7 +411,7 @@ public class Main extends javax.swing.JFrame {
     private void btn_selectImageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btn_selectImageActionPerformed
         JFileChooser fileChooser = new JFileChooser();
         fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-        FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files", "jpg", "gif", "png");
+        FileNameExtensionFilter filter = new FileNameExtensionFilter("Image Files", "jpg", "jpeg", "gif", "png", "bmp");
         fileChooser.setFileFilter(filter);
         fileChooser.setDialogTitle("Open schedule file");
         int result = fileChooser.showSaveDialog(null);
@@ -437,6 +425,7 @@ public class Main extends javax.swing.JFrame {
             btn_shuffle.setEnabled(true);
             score = 0;
             numberOfMoves = 0;
+            isSolved = false;
             lbl_score.setText("Skor: " + score);
         }
     }//GEN-LAST:event_btn_selectImageActionPerformed
