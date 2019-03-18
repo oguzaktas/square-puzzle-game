@@ -31,7 +31,6 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  * Yazilim Laboratuvari II Proje 1
- *
  * @author Oguz Aktas
  */
 public class Main extends javax.swing.JFrame {
