@@ -185,10 +185,11 @@ public class Main extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(jPanel1, "<html><b>Tebrikler! Puzzle tamamlanmistir.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
             printScore();
             getHighestScore();
-            jPanel1.setEnabled(false);
+            setPanelEnabled(jPanel1, false);
         }
         if (score == 0) {
             JOptionPane.showMessageDialog(jPanel1, "<html><b>Hicbir puzzle parcasi dogru yerde olmadigi icin karistirmaya devam ediniz.</b></html>", "Information", JOptionPane.INFORMATION_MESSAGE);
+            setPanelEnabled(jPanel1, false);
         } else { // Bir veya daha fazla puzzle parcasi dogru yerdeyse Karistir butonu kapatilir.
             btn_shuffle.setEnabled(false);
         }
